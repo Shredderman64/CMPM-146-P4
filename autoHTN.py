@@ -69,9 +69,10 @@ def declare_operators (data):
 	# make operators using the rules for each recipe
 	for item in data['Recipes']:
 		operator = make_operator(data['Recipes'][item])
-		operator.__name__ = 'op_' + item.key()
+		operator.__name__ = 'op_' + item.replace(" ", "_")
 		operators.append(operator)
-	pyhop.declare_operators(operators)
+	for op in operators:
+		pyhop.declare_operators(op)
 
 def add_heuristic (data, ID):
 	# prune search branch if heuristic() returns True
@@ -119,7 +120,7 @@ if __name__ == '__main__':
 	declare_methods(data)
 	add_heuristic(data, 'agent')
 
-	# pyhop.print_operators()
+	pyhop.print_operators()
 	# pyhop.print_methods()
 
 	# Hint: verbose output can take a long time even if the solution is correct; 
