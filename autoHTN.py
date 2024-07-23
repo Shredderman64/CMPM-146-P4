@@ -59,7 +59,15 @@ def make_operator (rule):
 def declare_operators (data):
 	# your code here
 	# hint: call make_operator, then declare the operator to pyhop using pyhop.declare_operators(o1, o2, ..., ok)
-	pass
+	
+	# Holds list of operators to be declared
+	operators = []
+	# make operators using the rules for each recipe
+	for item in data['Recipes']:
+		operator = make_operator(item)
+		operator.__name__ = 'op_' + item.key()
+		operators.append(operator)
+	pyhop.declare_operators(operators)
 
 def add_heuristic (data, ID):
 	# prune search branch if heuristic() returns True
