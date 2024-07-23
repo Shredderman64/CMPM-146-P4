@@ -19,9 +19,7 @@ def make_method (name, rule):
 	def method (state, ID):
 		# your code here
 		tasks = []
-		# gets list of subtasks
-		for item in rule['Recipes'][name]:
-			pass
+		# get list of subtasks
 		return tasks
 
 	return method
