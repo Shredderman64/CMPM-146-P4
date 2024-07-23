@@ -38,7 +38,7 @@ def declare_methods (data):
 	method = [] # list of tasks sent to declare_methods
 
 	# get times for all recipes and sort by time
-	for key in data['Recipes'].keys:
+	for key in data['Recipes'].keys():
 		time = data['Recipes'][key]['Time']
 		recipe_keys.append((time, key))
 	recipe_keys = sorted(recipe_keys)
@@ -47,13 +47,19 @@ def declare_methods (data):
 	for time, key in recipe_keys:
 		method = make_method(key, data['Recipes'][key])
 		pyhop.declare_methods('produce_' + key, method)
-		method.clear()
-				
 
 def make_operator (rule):
 	def operator (state, ID):
-		# your code here
-		pass
+		if state.time[ID] >= rule['Time']:
+			state.time[ID] -= rule['Time']
+			for item in rule['Produces']:
+				prod_val = getattr(state,item)[ID] + rule['Produces'][item]
+				setattr(state, item, {ID: prod_val})
+			for item in rule['Consumes']:
+				con_val = getattr(state,item)[ID] - rule['Consumes'][item]
+				setattr(state, item, {ID: con_val})
+			return state
+		return False
 	return operator
 
 def declare_operators (data):
@@ -64,7 +70,7 @@ def declare_operators (data):
 	operators = []
 	# make operators using the rules for each recipe
 	for item in data['Recipes']:
-		operator = make_operator(item)
+		operator = make_operator(data['Recipes'][item])
 		operator.__name__ = 'op_' + item.key()
 		operators.append(operator)
 	pyhop.declare_operators(operators)
