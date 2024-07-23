@@ -18,7 +18,11 @@ pyhop.declare_methods ('produce', produce)
 def make_method (name, rule):
 	def method (state, ID):
 		# your code here
-		pass
+		tasks = []
+		# gets list of subtasks
+		for item in rule['Recipes'][name]:
+			pass
+		return tasks
 
 	return method
 
@@ -28,7 +32,19 @@ def declare_methods (data):
 
 	# your code here
 	# hint: call make_method, then declare the method to pyhop using pyhop.declare_methods('foo', m1, m2, ..., mk)	
-	pass			
+
+	# declaring lists for later use
+	recipe_keys = [] # holds recipes when sorted by time
+	methods = [] # list of methods sent to declare_methods
+
+	# get times for all recipes and sort by time
+	for key in data['Recipes'].keys:
+		time = data['Recipes'][key]['Time']
+		recipe_keys.append((time, key))
+	recipe_keys = sorted(recipe_keys)
+
+	# make and declare all methods to pyhop
+				
 
 def make_operator (rule):
 	def operator (state, ID):
