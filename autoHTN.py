@@ -35,7 +35,7 @@ def declare_methods (data):
 
 	# declaring lists for later use
 	recipe_keys = [] # holds recipes when sorted by time
-	method = [] # list of methods sent to declare_methods
+	method = [] # list of tasks sent to declare_methods
 
 	# get times for all recipes and sort by time
 	for key in data['Recipes'].keys:
