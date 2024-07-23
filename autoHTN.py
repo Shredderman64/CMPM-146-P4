@@ -35,7 +35,7 @@ def declare_methods (data):
 
 	# declaring lists for later use
 	recipe_keys = [] # holds recipes when sorted by time
-	methods = [] # list of methods sent to declare_methods
+	method = [] # list of methods sent to declare_methods
 
 	# get times for all recipes and sort by time
 	for key in data['Recipes'].keys:
@@ -44,6 +44,10 @@ def declare_methods (data):
 	recipe_keys = sorted(recipe_keys)
 
 	# make and declare all methods to pyhop
+	for time, key in recipe_keys:
+		method = make_method(key, data['Recipes'][key])
+		pyhop.declare_methods('produce_' + key, method)
+		method.clear()
 				
 
 def make_operator (rule):
