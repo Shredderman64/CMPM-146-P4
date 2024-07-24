@@ -18,12 +18,12 @@ pyhop.declare_methods ('produce', produce)
 def make_method (name, rule):
 	def method (state, ID):
 		tasks = []
-		if 'Requires' in rule:
-			for item in rule['Requires']:
-				tasks.append(('have_enough', ID, item, rule['Requires'][item]))
 		if 'Consumes' in rule:
 			for item in rule['Consumes']:
 				tasks.append(('have_enough', ID, item, rule['Consumes'][item]))
+		if 'Requires' in rule:
+			for item in rule['Requires']:
+				tasks.append(('have_enough', ID, item, rule['Requires'][item]))
 		tasks.append(('op_{}'.format(name), ID))
 		# get list of subtasks
 		return tasks
@@ -43,7 +43,7 @@ def declare_methods (data):
 	for key in data['Recipes'].keys():
 		time = data['Recipes'][key]['Time']
 		recipe_keys.append((time, key))
-	recipe_keys = sorted(recipe_keys)
+	recipe_keys = sorted(recipe_keys, reverse=True)
 
 	craft_list = []
 	for item in data['Items']:
@@ -96,13 +96,9 @@ def add_heuristic (data, ID):
 	# do not change parameters to heuristic(), but can add more heuristic functions with the same parameters: 
 	# e.g. def heuristic2(...); pyhop.add_check(heuristic2)
 	def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
-		tools = {"iron_axe", "stone_axe", "wooden_axe", "iron_pickaxe", "stone_pickaxe", "wooden_pickaxe"}
-		for tool in tools:
-			tool_check = ('have_enough', ID, tool, 1)
-			if tasks.count(tool_check) > 1:
-				return True
+		if state.stone_pickaxe[ID] > 0 and curr_task == ('have_enough', ID, 'wooden_pickaxe', 1):
+			return True
 		return False # if True, prune this branch
-
 	pyhop.add_check(heuristic)
 
 
@@ -134,7 +130,7 @@ if __name__ == '__main__':
 	with open(rules_filename) as f:
 		data = json.load(f)
 
-	state = set_up_state(data, 'agent', time=239) # allot time here
+	state = set_up_state(data, 'agent', time=300) # allot time here
 	goals = set_up_goals(data, 'agent')
 
 	declare_operators(data)
@@ -147,4 +143,4 @@ if __name__ == '__main__':
 	# Hint: verbose output can take a long time even if the solution is correct; 
 	# try verbose=1 if it is taking too long
 	pyhop.pyhop(state, goals, verbose=3)
-	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 20)], verbose=3)
+	# pyhop.pyhop(state, [('have_enough', 'agent', 'cart', 1),('have_enough', 'agent', 'rail', 10)], verbose=3)
