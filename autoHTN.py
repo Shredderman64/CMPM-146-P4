@@ -17,11 +17,14 @@ pyhop.declare_methods ('produce', produce)
 
 def make_method (name, rule):
 	def method (state, ID):
-		# your code here
 		tasks = []
+		for item in rule['Requires']:
+			tasks.append(('have_enough', ID, item, rule['Requires'][item]))
+		for item in rule['Consumes']:
+			tasks.append(('have_enough', ID, item, rule['Consumes'][item]))
+		tasks.append(('op_{}'.format(name), ID))
 		# get list of subtasks
 		return tasks
-
 	return method
 
 def declare_methods (data):
