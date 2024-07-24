@@ -96,6 +96,13 @@ def add_heuristic (data, ID):
 	# e.g. def heuristic2(...); pyhop.add_check(heuristic2)
 	def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
 		# your code here
+
+		# checks if a tool is repeatedly being tasked to be crafted and breaks the cycle if so
+		for tool in data['Tools']:
+			if curr_task == ('have_enough', ID, tool, 1):
+				if tasks.count(curr_task) > 1:
+					return True
+
 		return False # if True, prune this branch
 
 	pyhop.add_check(heuristic)
