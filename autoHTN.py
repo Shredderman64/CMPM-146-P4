@@ -18,10 +18,12 @@ pyhop.declare_methods ('produce', produce)
 def make_method (name, rule):
 	def method (state, ID):
 		tasks = []
-		for item in rule['Requires']:
-			tasks.append(('have_enough', ID, item, rule['Requires'][item]))
-		for item in rule['Consumes']:
-			tasks.append(('have_enough', ID, item, rule['Consumes'][item]))
+		if 'Requires' in rule:
+			for item in rule['Requires']:
+				tasks.append(('have_enough', ID, item, rule['Requires'][item]))
+		if 'Consumes' in rule:
+			for item in rule['Consumes']:
+				tasks.append(('have_enough', ID, item, rule['Consumes'][item]))
 		tasks.append(('op_{}'.format(name), ID))
 		# get list of subtasks
 		return tasks
@@ -36,7 +38,6 @@ def declare_methods (data):
 
 	# declaring lists for later use
 	recipe_keys = [] # holds recipes when sorted by time
-	method = [] # list of tasks sent to declare_methods
 
 	# get times for all recipes and sort by time
 	for key in data['Recipes'].keys():
@@ -45,9 +46,20 @@ def declare_methods (data):
 	recipe_keys = sorted(recipe_keys)
 
 	# make and declare all methods to pyhop
-	for time, key in recipe_keys:
-		method = make_method(key, data['Recipes'][key])
-		pyhop.declare_methods('produce_' + key, method)
+	# for time, key in recipe_keys:
+	#	method = make_method(key, data['Recipes'][key])
+	#	pyhop.declare_methods('produce_' + key, method)
+	for item in data['Items']:
+		methods = [] # list of tasks sent to declare_methods
+		for time, key in recipe_keys:
+			product = data['Recipes'][key]['Produces']
+			if item in product:
+				name = key.replace(" ", "_")
+				method = make_method(name, data['Recipes'][key])
+				method.__name__ = name
+				methods.append(method)
+		pyhop.declare_methods('produce_{}'.format(item), *methods)
+	
 
 def make_operator (rule):
 	def operator (state, ID):
@@ -56,9 +68,10 @@ def make_operator (rule):
 			for item in rule['Produces']:
 				prod_val = getattr(state,item)[ID] + rule['Produces'][item]
 				setattr(state, item, {ID: prod_val})
-			for item in rule['Consumes']:
-				con_val = getattr(state,item)[ID] - rule['Consumes'][item]
-				setattr(state, item, {ID: con_val})
+			if 'Consumes' in rule:
+				for item in rule['Consumes']:
+					con_val = getattr(state,item)[ID] - rule['Consumes'][item]
+					setattr(state, item, {ID: con_val})
 			return state
 		return False
 	return operator
@@ -123,8 +136,8 @@ if __name__ == '__main__':
 	declare_methods(data)
 	add_heuristic(data, 'agent')
 
-	pyhop.print_operators()
-	# pyhop.print_methods()
+	# pyhop.print_operators()
+	pyhop.print_methods()
 
 	# Hint: verbose output can take a long time even if the solution is correct; 
 	# try verbose=1 if it is taking too long
