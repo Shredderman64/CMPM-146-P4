@@ -45,33 +45,34 @@ def declare_methods (data):
 		recipe_keys.append((time, key))
 	recipe_keys = sorted(recipe_keys)
 
-	# make and declare all methods to pyhop
-	# for time, key in recipe_keys:
-	#	method = make_method(key, data['Recipes'][key])
-	#	pyhop.declare_methods('produce_' + key, method)
+	craft_list = []
 	for item in data['Items']:
+		craft_list.append(item)
+	for tool in data['Tools']:
+		craft_list.append(tool)
+	
+	for resource in craft_list:
 		methods = [] # list of tasks sent to declare_methods
 		for time, key in recipe_keys:
 			product = data['Recipes'][key]['Produces']
-			if item in product:
+			if resource in product:
 				name = key.replace(" ", "_")
 				method = make_method(name, data['Recipes'][key])
 				method.__name__ = name
 				methods.append(method)
-		pyhop.declare_methods('produce_{}'.format(item), *methods)
-	
+		pyhop.declare_methods('produce_{}'.format(resource), *methods)
 
 def make_operator (rule):
 	def operator (state, ID):
 		if state.time[ID] >= rule['Time']:
 			state.time[ID] -= rule['Time']
-			for item in rule['Produces']:
-				prod_val = getattr(state,item)[ID] + rule['Produces'][item]
-				setattr(state, item, {ID: prod_val})
 			if 'Consumes' in rule:
 				for item in rule['Consumes']:
 					con_val = getattr(state,item)[ID] - rule['Consumes'][item]
 					setattr(state, item, {ID: con_val})
+			for item in rule['Produces']:
+				prod_val = getattr(state,item)[ID] + rule['Produces'][item]
+				setattr(state, item, {ID: prod_val})
 			return state
 		return False
 	return operator
@@ -95,14 +96,11 @@ def add_heuristic (data, ID):
 	# do not change parameters to heuristic(), but can add more heuristic functions with the same parameters: 
 	# e.g. def heuristic2(...); pyhop.add_check(heuristic2)
 	def heuristic (state, curr_task, tasks, plan, depth, calling_stack):
-		# your code here
-
-		# checks if a tool is repeatedly being tasked to be crafted and breaks the cycle if so
-		for tool in data['Tools']:
-			if curr_task == ('have_enough', ID, tool, 1):
-				if tasks.count(curr_task) > 1:
-					return True
-
+		tools = {"iron_axe", "stone_axe", "wooden_axe", "iron_pickaxe", "stone_pickaxe", "wooden_pickaxe"}
+		for tool in tools:
+			tool_check = ('have_enough', ID, tool, 1)
+			if tasks.count(tool_check) > 1:
+				return True
 		return False # if True, prune this branch
 
 	pyhop.add_check(heuristic)
